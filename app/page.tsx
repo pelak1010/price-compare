@@ -5,6 +5,7 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [verdict, setVerdict] = useState("");
+  const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingVerdict, setLoadingVerdict] = useState(false);
 
@@ -13,10 +14,19 @@ export default function Home() {
     setLoading(true);
     setResults([]);
     setVerdict("");
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const items = data.results || [];
+    setHistory([]);
+
+    const [searchRes, historyRes] = await Promise.all([
+      fetch(`/api/search?q=${encodeURIComponent(query)}`),
+      fetch(`/api/history?q=${encodeURIComponent(query)}`),
+    ]);
+
+    const searchData = await searchRes.json();
+    const historyData = await historyRes.json();
+
+    const items = searchData.results || [];
     setResults(items);
+    setHistory(historyData.history || []);
     setLoading(false);
 
     if (items.length > 0) {
@@ -31,6 +41,26 @@ export default function Home() {
       setLoadingVerdict(false);
     }
   }
+
+  // Build chart data from history
+  const chartData = (() => {
+    if (history.length < 2) return null;
+    const bySource: Record<string, { date: string; price: number }[]> = {};
+    history.forEach((h) => {
+      const price = parseFloat(h.price?.replace(/[^0-9.]/g, "") || "0");
+      if (!price) return;
+      if (!bySource[h.source]) bySource[h.source] = [];
+      bySource[h.source].push({
+        date: new Date(h.searched_at).toLocaleDateString(),
+        price,
+      });
+    });
+    return bySource;
+  })();
+
+  const maxPrice = chartData
+    ? Math.max(...Object.values(chartData).flat().map((d) => d.price))
+    : 0;
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center px-4 py-16 gap-8">
@@ -81,6 +111,31 @@ export default function Home() {
             ? <div className="text-indigo-300 text-sm animate-pulse">Analysing results...</div>
             : <div className="text-indigo-100 text-sm leading-relaxed">{verdict}</div>
           }
+        </div>
+      )}
+
+      {chartData && Object.keys(chartData).length > 0 && (
+        <div className="w-full max-w-2xl bg-[#111] border border-[#1e1e1e] rounded-xl p-5">
+          <div className="text-[#888] text-xs font-semibold mb-4">📈 PRICE HISTORY</div>
+          <div className="flex flex-col gap-3">
+            {Object.entries(chartData).slice(0, 5).map(([source, points]) => (
+              <div key={source}>
+                <div className="text-[#555] text-xs mb-1">{source}</div>
+                <div className="flex items-end gap-1 h-12">
+                  {points.slice(-10).map((p, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className="w-full bg-indigo-600 rounded-sm"
+                        style={{ height: `${Math.max(4, (p.price / maxPrice) * 40)}px` }}
+                        title={`${p.date}: $${p.price}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-[#333] text-xs mt-2">{history.length} price points recorded</div>
         </div>
       )}
 

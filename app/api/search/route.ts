@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const maxDuration = 30;
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+);
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q");
@@ -20,6 +26,17 @@ export async function GET(request: NextRequest) {
     rating: item.rating,
     reviews: item.reviews,
   }));
+
+  // Save to price history
+  if (results.length > 0) {
+    await supabase.from("price_history").insert(
+      results.map((r: any) => ({
+        product_name: query,
+        price: r.price || "N/A",
+        source: r.source || "Unknown",
+      }))
+    );
+  }
 
   return NextResponse.json({ results });
 }
