@@ -1,65 +1,54 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-4 py-16 gap-8">
+      
+      {/* Logo */}
+      <div className="text-3xl font-bold text-white tracking-tight">
+        price<span className="text-indigo-400">wise</span>
+      </div>
+
+      {/* Tagline */}
+      <p className="text-[#888] text-center max-w-md text-[15px] leading-relaxed">
+        Search any product. Compare prices across the web. Get an AI-powered best-pick verdict instantly.
+      </p>
+
+      {/* Search bar */}
+      <div className="w-full max-w-xl flex rounded-xl overflow-hidden border border-[#2a2a2a] bg-[#141414]">
+        <input
+          type="text"
+          placeholder="Search for a product e.g. Sony WH-1000XM5..."
+          className="flex-1 bg-transparent border-none outline-none px-5 py-4 text-white text-[15px] placeholder-[#555]"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-4 text-sm font-medium transition-colors whitespace-nowrap">
+          Compare prices
+        </button>
+      </div>
+
+      {/* Trending searches */}
+      <div className="flex gap-2 flex-wrap justify-center items-center">
+        <span className="text-[#555] text-xs">Trending:</span>
+        {["MacBook Air M3", "Nike Air Max", "Dyson V15", "GoPro Hero 13"].map((item) => (
+          <button key={item} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full px-3 py-1 text-xs text-[#888] hover:border-indigo-500 hover:text-indigo-400 transition-colors">
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {/* Feature pills */}
+      <div className="grid grid-cols-3 gap-3 max-w-xl w-full">
+        {[
+          { icon: "🔍", title: "10+ retailers", desc: "Amazon, PB Tech, Mighty Ape and more" },
+          { icon: "🤖", title: "AI verdict", desc: "Claude picks the best deal for you" },
+          { icon: "🔔", title: "Price alerts", desc: "Get notified when prices drop" },
+        ].map((f) => (
+          <div key={f.title} className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
+            <div className="text-lg mb-1">{f.icon}</div>
+            <div className="text-xs font-semibold text-[#ccc] mb-1">{f.title}</div>
+            <div className="text-xs text-[#555] leading-relaxed">{f.desc}</div>
+          </div>
+        ))}
+      </div>
+
+    </main>
   );
 }
