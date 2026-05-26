@@ -4,16 +4,32 @@ import { useState } from "react";
 export default function Home() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
+  const [verdict, setVerdict] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingVerdict, setLoadingVerdict] = useState(false);
 
   async function handleSearch() {
     if (!query.trim()) return;
     setLoading(true);
     setResults([]);
+    setVerdict("");
     const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
     const data = await res.json();
-    setResults(data.results || []);
+    const items = data.results || [];
+    setResults(items);
     setLoading(false);
+
+    if (items.length > 0) {
+      setLoadingVerdict(true);
+      const v = await fetch("/api/verdict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, results: items }),
+      });
+      const vdata = await v.json();
+      setVerdict(vdata.verdict);
+      setLoadingVerdict(false);
+    }
   }
 
   return (
@@ -48,15 +64,24 @@ export default function Home() {
         <div className="flex gap-2 flex-wrap justify-center items-center">
           <span className="text-[#555] text-xs">Trending:</span>
           {["MacBook Air M3", "Nike Air Max", "Dyson V15", "GoPro Hero 13"].map((item) => (
-            <button key={item} onClick={() => { setQuery(item); }} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full px-3 py-1 text-xs text-[#888] hover:border-indigo-500 hover:text-indigo-400 transition-colors">
+            <button key={item} onClick={() => setQuery(item)}
+              className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-full px-3 py-1 text-xs text-[#888] hover:border-indigo-500 hover:text-indigo-400 transition-colors">
               {item}
             </button>
           ))}
         </div>
       )}
 
-      {loading && (
-        <div className="text-[#555] text-sm animate-pulse">Finding the best prices...</div>
+      {loading && <div className="text-[#555] text-sm animate-pulse">Finding the best prices...</div>}
+
+      {(verdict || loadingVerdict) && (
+        <div className="w-full max-w-2xl bg-indigo-950 border border-indigo-800 rounded-xl p-5">
+          <div className="text-indigo-400 text-xs font-semibold mb-2">🤖 AI BEST-PICK VERDICT</div>
+          {loadingVerdict
+            ? <div className="text-indigo-300 text-sm animate-pulse">Analysing results...</div>
+            : <div className="text-indigo-100 text-sm leading-relaxed">{verdict}</div>
+          }
+        </div>
       )}
 
       {results.length > 0 && (
