@@ -1,0 +1,23 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams.get("q");
+  if (!query) return NextResponse.json({ error: "No query" }, { status: 400 });
+
+  const res = await fetch(
+    `https://serpapi.com/search.json?engine=google_shopping&q=${encodeURIComponent(query)}&api_key=${process.env.SERPAPI_KEY}`
+  );
+  const data = await res.json();
+
+  const results = (data.shopping_results || []).slice(0, 8).map((item: any) => ({
+    title: item.title,
+    price: item.price,
+    source: item.source,
+    link: item.link,
+    thumbnail: item.thumbnail,
+    rating: item.rating,
+    reviews: item.reviews,
+  }));
+
+  return NextResponse.json({ results });
+}
